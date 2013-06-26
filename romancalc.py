@@ -76,7 +76,7 @@ class RomanNum:
         necessary to convert to Arabic, and evaluate the arithmetic
         expression if necessary.
         """
-        num_cat_op = re.compile(r'([IVXLCDM]+)\s*(\+|\-|\*|\/|)\s*(.*)")')
+        num_cat_op = re.compile(r'([IVXLCDM]+)\s*([\+\-\*\/])\s*(.*)')
         just_num = re.compile(r'([IVXLCDM]+)')
 
         expr = ""
@@ -128,15 +128,17 @@ class RomanNum:
             for u in RomanNum.subtract_dict.keys():
                 for i in r:
                     if s[i:(i + len(u))] == u:
-                        # Modifying the sequence r inside the 2nd for loop here
-                        # is somewhat dangerous magic, but we have to do
-                        # it in order to make sure that we scan the entire
-                        # string s for possible expansions, since every
-                        # such expansion makes it grow.
-                        for j in range(len(RomanNum.subtract_dict[u]) - len(u)):
+                        # Modifying the range of "r" inside the 2nd
+                        # for loop here is somewhat dangerous magic,
+                        # but we have to do it in order to make sure
+                        # that we scan the entire string s for
+                        # possible expansions, since every such
+                        # expansion makes it grow.
+                        for j in range(len(RomanNum.subtract_dict[u]) \
+                                       - len(u)):
                             r += [(r[-1:][0] + 1)]
-                            s = s[:i] + RomanNum.subtract_dict[u] \
-                                + s[(i + len(u)):]
+                        s = s[:i] + RomanNum.subtract_dict[u] \
+                            + s[(i + len(u)):]
             slist = list(s)
             # "Hi, I'm a naive algorithm"
             n = 0
@@ -188,20 +190,20 @@ class RomanNum:
             self._string_representation = s
             return s
 
-        def __cmp__(self, other):
-            return self.toInt() - other.toInt()
+    def __cmp__(self, other):
+        return self.toInt() - other.toInt()
 
-        def __add__(self, other):
-            return RomanNum(self.toInt() + other.toInt())
+    def __add__(self, other):
+        return RomanNum(self.toInt() + other.toInt())
 
-        def __sub__(self, other):
-            return RomanNum(self.toInt() - other.toInt())
+    def __sub__(self, other):
+        return RomanNum(self.toInt() - other.toInt())
 
-        def __mul__(self, other):
-            return RomanNum(self.toInt() * other.toInt())
+    def __mul__(self, other):
+        return RomanNum(self.toInt() * other.toInt())
 
-        def __div__(self, other):
-            return RomanNum(self.toInt() / other.toInt())
+    def __div__(self, other):
+        return RomanNum(self.toInt() / other.toInt())
 
 
 class TestRomanCalculator(unittest.TestCase):
@@ -228,6 +230,148 @@ class TestRomanCalculator(unittest.TestCase):
 
     def test4(self):
         self.failUnless(TestRomanCalculator.rtest_ii.toInt() == 2)
+
+    def test5(self):
+        self.failUnless(TestRomanCalculator.rtest_ii \
+                        == TestRomanCalculator.rtest_ii_2)
+
+    def test6(self):
+        self.failUnlessRaises(ValueError, RomanNum, "S")  # Exception in constructor
+        
+    def test7a(self):
+        self.failUnless(TestRomanCalculator.rtest_7)  # should be a non-null object
+
+    def test7b(self):
+        self.failUnless(TestRomanCalculator.rtest_7.toInt() == 7)  # set internal value
+                                                                   # from c'tor
+
+    def test7c(self):
+        self.failUnless(TestRomanCalculator.rtest_7.toStr() == "VII")
+                       # set internal string value from c'tor correctly as well
+
+    def test7d(self):
+        self.failUnless(TestRomanCalculator.rtest_7a)  # should be a non-null object
+
+    def test7e(self):
+        self.failUnless(TestRomanCalculator.rtest_7a.toInt() == 7)  # set internal value
+                                                                    # from c'tor
+    
+    def test7f(self):
+        self.failUnless(TestRomanCalculator.rtest_7a.toStr() == "VII")
+                       # set internal string value from c'tor correctly as well
+
+    def test8a(self):
+        self.failUnless(RomanNum("MMDCLXXVIII").toInt() == 2678)
+
+    def test8b(self):
+        self.failUnless(RomanNum(2678).toStr() == "MMDCLXXVIII")
+
+    def test9a(self):
+        i_before_v = RomanNum("IV")
+        self.failIf(i_before_v.toInt() == 6)
+
+    def test9b(self):
+        i_before_v = RomanNum("IV")
+        self.failIf(i_before_v.toInt() == 5)
+
+    def test9c(self):
+        i_before_v = RomanNum("IV")
+        self.failIf(i_before_v.toInt() == 1)
+
+    def test9d(self):
+        i_before_v = RomanNum("IV")
+        self.failUnless(i_before_v.toInt() == 4)
+
+    def test9e(self):
+        nine = RomanNum(9)
+        self.failIf(nine.toStr() == "VIIII")
+
+    def test10a(self):
+        # might as well jump!
+        eddie = RomanNum(1984)
+        dave = RomanNum("MCMLXXXIV")
+        # eddie==dave compares using the overloaded __cmp__ member
+        # function; "eddie is dave" would be a direct comparison of
+        # references; eddie and dave should be two different but equal
+        # objects.
+        self.failUnless(eddie == dave)
+
+    def test10b(self):
+        eddie = RomanNum(1984)
+        dave = RomanNum("MCMLXXXIV")
+        self.failIf(eddie is dave)
+
+    # Try to break the code added for test10 (the "optimization," as
+    # it were, of too-long "digit" runs to two-character "subtraction
+    # sequences" by requiring multiple passes to check for the same
+    # possible conversion.
+
+    def test11a(self):
+        nine_hundred = RomanNum(900)
+        self.failIf(nine_hundred.toStr() == "DCD")
+
+    def test11b(self):
+        nine_hundred = RomanNum(900)
+        self.failUnless(nine_hundred.toStr() == "CM")
+
+    def test11c(self):
+        nine = RomanNum(9)
+        self.failIf(nine.toStr() == "VIV")
+
+    def test11d(self):
+        nine = RomanNum(9)
+        self.failUnless(nine.toStr() == "IX")
+
+    # Smoke test arithmetic operations
+    def test20a(self):
+        four = RomanNum('IV')
+        five = RomanNum('V')
+        nine = four + five
+        self.failUnless(nine.toStr() == "IX")
+
+    # Test combinations of arithmetic operators, implicit
+    #    construction, and comparisons
+    def test20s(self):
+        four = RomanNum('IV')
+        five = RomanNum('V')
+        twenty = RomanNum(20)
+        self.failUnless(four * five == twenty)
+
+    def test20m(self):
+        four = RomanNum('IV')
+        five = RomanNum('V')
+        twenty = RomanNum(20)
+        twenty_five = twenty + five
+        depeche_mode_live = twenty_five * four + five - four
+        self.failUnless(depeche_mode_live == RomanNum('CI'))
+
+    # Division, kind of a special case.
+    def test20d(self):
+        one = RomanNum(1)
+        two = RomanNum(2)
+        three = RomanNum(3)
+        five = RomanNum(5)
+        ten = RomanNum(10)
+        self.failUnless(ten / three == three \
+                        and two / one == two \
+                        and ten / two == five)
+
+    # Finally, start testing parsing string input containing operators...
+    def testI1a(self):
+        self.failUnless(RomanNum.calc('X') == RomanNum(10))
+
+    def testI2a(self):
+        self.failUnless(RomanNum.calc('X + X') == RomanNum(20))
+
+    def testI2b(self):
+        self.failUnless(RomanNum.calc('X * II') == RomanNum(20))
+
+    def testI3a(self):
+        self.failUnless(RomanNum.calc('X * II + IX') == RomanNum(29))
+
+    # By using eval() we get PRMDAS for free.
+    def testI3b(self):
+        self.failIf(RomanNum.calc('X + II * IX') == RomanNum(108))
 
 
 def main():

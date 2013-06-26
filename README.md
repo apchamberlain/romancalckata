@@ -13,7 +13,9 @@ All the action is in `class RNum`, which some people may object to as
 being too big (certainly more than one screen!).  My take on that is
 that all the functionality belongs in that class---additional helper
 classes would only compromise good cohesion and add unnecessary
-coupling, the bane of overtricky OO systems.  The rest of the file is
+coupling, the bane of overtricky OO systems.  (Although perhaps
+there's room for improvement *within* the class---I could write some
+nested  helper functions.)  The rest of the file is
 a unit- and integration-test harness developed side-by-side with
 `RNum`, [TDD](http://www.agiledata.org/essays/tdd.html)-style, using
 the standard Python `unittest` module.
